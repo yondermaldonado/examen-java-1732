@@ -1,6 +1,5 @@
 package com.carmotors.vista;
 
-import java.time.format.DateTimeFormatter;
 import com.carmotors.controlador.ReporteController;
 import com.carmotors.excepcion.ValidacionException;
 import com.carmotors.modelo.FilaReporteDTO;
@@ -30,15 +29,13 @@ public final class VistaReportes {
             consola.mostrar("1. Servicios solicitados por tipo de mantenimiento");
             consola.mostrar("2. Productividad: participaciones por técnico");
             consola.mostrar("3. Consumo de repuestos (unidades)");
-            consola.mostrar("4. Servicios completados");
             consola.mostrar("0. Regresar");
-            String opcion = consola.leerOpcion("Opción", "1", "2", "3", "4", "0");
+            String opcion = consola.leerOpcion("Opción", "1", "2", "3", "0");
             if (opcion == null || "0".equals(opcion)) return;
             TipoReporte tipo = switch (opcion) {
                 case "1" -> TipoReporte.SERVICIOS_SOLICITADOS;
                 case "2" -> TipoReporte.PRODUCTIVIDAD_TECNICOS;
                 case "3" -> TipoReporte.CONSUMO_REPUESTOS;
-                case "4" -> TipoReporte.SERVICIOS_COMPLETADOS;
                 default -> throw new IllegalStateException("Opción ya validada");
             };
             ejecutarConsulta(tipo);
@@ -78,95 +75,24 @@ public final class VistaReportes {
     }
 
     private void imprimir(ReporteDTO reporte) {
-
         consola.titulo(reporte.titulo());
-
-        consola.mostrar(
-                "Periodo: " + reporte.filtro().fechaInicio()
-                        + " a " + reporte.filtro().fechaFin()
-        );
-
-        // Presentación del nuevo reporte.
-        if (reporte.tipo() == TipoReporte.SERVICIOS_COMPLETADOS) {
-            imprimirServiciosCompletados(reporte);
-            return;
-        }
-
+        consola.mostrar("Periodo: " + reporte.filtro().fechaInicio() + " a "
+                + reporte.filtro().fechaFin());
         String unidad = switch (reporte.tipo()) {
             case SERVICIOS_SOLICITADOS -> "órdenes";
             case PRODUCTIVIDAD_TECNICOS -> "participaciones";
             case CONSUMO_REPUESTOS -> "unidades";
-            case SERVICIOS_COMPLETADOS -> "órdenes";
         };
-
         if (reporte.filas().isEmpty()) {
-            consola.mostrar(
-                    "No hay datos para el periodo seleccionado."
-            );
+            consola.mostrar("No hay datos para el periodo seleccionado.");
             return;
         }
-
         consola.mostrar("Resultado | " + unidad);
-
         for (FilaReporteDTO fila : reporte.filas()) {
-            consola.mostrar(
-                    fila.nombre() + " [" + fila.codigo()
-                            + "] | " + fila.cantidad()
-            );
+            consola.mostrar(fila.nombre() + " [" + fila.codigo() + "] | " + fila.cantidad());
         }
-
-        long total = reporte.filas()
-                .stream()
-                .mapToLong(FilaReporteDTO::cantidad)
-                .sum();
-
+        // El total solo suma magnitudes homogéneas del mismo reporte.
+        long total = reporte.filas().stream().mapToLong(FilaReporteDTO::cantidad).sum();
         consola.mostrar("Total de " + unidad + ": " + total);
-    }
-    private void imprimirServiciosCompletados(ReporteDTO reporte) {
-
-        DateTimeFormatter formato =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
-        if (reporte.filas().isEmpty()) {
-            consola.mostrar("No hay servicios completados.");
-            return;
-        }
-
-        for (FilaReporteDTO fila : reporte.filas()) {
-
-            consola.mostrar("Orden: " + fila.codigo());
-
-            consola.mostrar("Tipo: " + fila.nombre());
-
-            consola.mostrar("Estado: " + fila.estado());
-
-            consola.mostrar(
-                    "Recepción: " +
-                            fila.fechaRecepcion().format(formato)
-            );
-
-            consola.mostrar(
-                    "Completado: " +
-                            fila.fechaCompletado().format(formato)
-            );
-
-            if (fila.fechaEntrega() == null) {
-
-                consola.mostrar("Entrega: Pendiente de entrega");
-
-            } else {
-
-                consola.mostrar(
-                        "Entrega: " +
-                                fila.fechaEntrega().format(formato)
-                );
-            }
-
-            consola.mostrar("--------------------------------");
-        }
-
-        consola.mostrar(
-                "Total de servicios: " + reporte.filas().size()
-        );
     }
 }

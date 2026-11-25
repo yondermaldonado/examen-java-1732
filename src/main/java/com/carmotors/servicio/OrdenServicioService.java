@@ -1,6 +1,13 @@
 package com.carmotors.servicio;
 
 import com.carmotors.dao.OrdenServicioDAO;
+import com.carmotors.dao.ClienteDAO;
+import com.carmotors.modelo.Cliente;
+import com.carmotors.modelo.EventoServicioCompletado;
+import com.carmotors.servicio.observer.Observador;
+import com.carmotors.servicio.observer.Sujeto;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import com.carmotors.dao.factory.DAOFactory;
 import com.carmotors.excepcion.DaoException;
 import com.carmotors.excepcion.ValidacionException;
@@ -21,7 +28,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** Alta, consulta y ciclo de vida de órdenes; consumo/facturación mediante contratos transaccionales. */
-public class OrdenServicioService {
+public class OrdenServicioService implements Sujeto {
     private final OrdenServicioDAO dao;
     private final VehiculoConsulta vehiculos;
     private final Supplier<Connection> conexiones;
@@ -29,6 +36,10 @@ public class OrdenServicioService {
     private final ConsumoReservasOrden consumo;
     private final FacturacionOrden facturacion;
     private final PublicadorInventario publicador;
+    /** Consulta en la misma transacción; es opcional para mantener los constructores antiguos. */
+    private final ClienteDAO clienteDAO;
+    // Set conserva orden de alta y evita registrar dos veces el mismo receptor.
+    private final Set<Observador> suscriptores = new LinkedHashSet<>();
     private static final Map<String, String> SIGUIENTE = Map.of(
             "Pendiente", "En Proceso", "En Proceso", "Completado",
             "Completado", "Facturado", "Facturado", "Entregado");
@@ -64,6 +75,14 @@ public class OrdenServicioService {
     public OrdenServicioService(OrdenServicioDAO dao, VehiculoConsulta vehiculos,
                                 Supplier<Connection> conexiones, Clock reloj, ConsumoReservasOrden consumo,
                                 FacturacionOrden facturacion, PublicadorInventario publicador) {
+        this(dao, vehiculos, conexiones, reloj, consumo, facturacion, publicador, null);
+    }
+
+    /** Constructor del examen: nombre del cliente recuperado por DAO, sin SQL en el Service. */
+    public OrdenServicioService(OrdenServicioDAO dao, VehiculoConsulta vehiculos,
+                                Supplier<Connection> conexiones, Clock reloj, ConsumoReservasOrden consumo,
+                                FacturacionOrden facturacion, PublicadorInventario publicador, ClienteDAO clienteDAO) {
+        this.clienteDAO = clienteDAO;
         this.consumo = Objects.requireNonNull(consumo);
         this.facturacion = Objects.requireNonNull(facturacion);
         this.publicador = Objects.requireNonNull(publicador);
@@ -117,10 +136,50 @@ public class OrdenServicioService {
     public void facturarOrden(int id) { cambiarEstado(id, "Facturado"); }
     public void entregarOrden(int id) { cambiarEstado(id, "Entregado"); }
 
+    @Override
+    public void registrarObservador(Observador receptor) {
+        Objects.requireNonNull(receptor, "El observador es obligatorio.");
+        synchronized (suscriptores) {
+            suscriptores.add(receptor);
+        }
+    }
+
+    @Override
+    public void removerObservador(Observador receptor) {
+        synchronized (suscriptores) {
+            suscriptores.remove(receptor);
+        }
+    }
+
+    /** La lista de receptores es una fotografía estable de cada evento. */
+    @Override
+    public void notificarObservadores(EventoServicioCompletado detalle) {
+        Objects.requireNonNull(detalle, "El evento no puede ser nulo.");
+        List<Observador> destinatarios;
+        synchronized (suscriptores) {
+            destinatarios = List.copyOf(suscriptores);
+        }
+        for (Observador destinatario : destinatarios) {
+            try {
+                destinatario.actualizar(detalle);
+            } catch (RuntimeException falla) {
+                System.err.println("Notificación no registrada (orden #" + detalle.servicioId()
+                        + "): " + falla.getMessage());
+            }
+        }
+    }
+
+    private boolean existenSuscriptores() {
+        synchronized (suscriptores) {
+            return !suscriptores.isEmpty();
+        }
+    }
+
     public void cambiarEstado(int id, String destino) {
         validarId(id);
         String nuevo = opcion(destino, List.of("Pendiente", "En Proceso", "Completado", "Facturado", "Entregado"), "estado");
         Set<Integer> afectados = Set.of();
+        EventoServicioCompletado evento = null;
         try (Connection con = conexiones.get()) {
             con.setAutoCommit(false);
             try {
@@ -149,6 +208,15 @@ public class OrdenServicioService {
                 if (!dao.actualizarEstado(con, id, orden.getEstado(), nuevo, fecha)) {
                     throw new ValidacionException("El estado de la orden cambió; vuelve a consultarla.");
                 }
+                if ("Completado".equals(nuevo) && existenSuscriptores()) {
+                    if (clienteDAO == null) {
+                        throw new ValidacionException("Falta configurar la consulta de clientes para notificaciones.");
+                    }
+                    Cliente cliente = clienteDAO.buscarPorId(con, orden.getClienteId())
+                            .orElseThrow(() -> new ValidacionException("No existe el cliente de la orden."));
+                    evento = new EventoServicioCompletado(id, orden.getVehiculoId(),
+                            orden.getPlaca(), cliente.getId(), cliente.getNombre(), fecha);
+                }
                 con.commit();
             } catch (RuntimeException | SQLException e) {
                 try { con.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
@@ -160,6 +228,7 @@ public class OrdenServicioService {
         }
         // El publicador aísla los errores de sus observadores; nunca publica antes del commit.
         afectados.forEach(publicador::publicar);
+        if (evento != null) notificarObservadores(evento);
     }
 
     public Optional<OrdenServicio> buscarPorId(int id) {

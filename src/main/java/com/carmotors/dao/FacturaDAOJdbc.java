@@ -4,7 +4,6 @@ import com.carmotors.excepcion.DaoException;
 import com.carmotors.excepcion.ValidacionException;
 import com.carmotors.modelo.DatosOrdenParaFactura;
 import com.carmotors.modelo.FacturaDTO;
-import com.carmotors.modelo.DocumentoFactura;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -74,32 +73,6 @@ public final class FacturaDAOJdbc implements FacturaDAO {
             }
         }
         return detalle;
-    }
-
-    @Override
-    public Optional<DocumentoFactura> buscarPorOrden(Connection con, long ordenId) {
-        String sql = """
-                SELECT f.id, f.servicio_id, f.fecha_emision, f.total_repuestos, f.total_mano_obra,
-                       f.impuestos, f.total_final, c.nombre AS cliente, c.documento_identidad,
-                       c.telefono, c.email, v.placa, m.nombre AS modelo, marca.nombre AS marca
-                FROM facturas f JOIN servicios s ON s.id = f.servicio_id
-                JOIN vehiculos v ON v.id = s.vehiculo_id JOIN clientes c ON c.id = v.cliente_id
-                JOIN modelos_vehiculo m ON m.id = v.modelo_id JOIN marcas_vehiculo marca ON marca.id = m.marca_id
-                WHERE f.servicio_id = ?
-                """;
-        try (var ps = con.prepareStatement(sql)) {
-            ps.setLong(1, ordenId);
-            try (var rs = ps.executeQuery()) {
-                if (!rs.next()) return Optional.empty();
-                return Optional.of(new DocumentoFactura(rs.getLong("id"), rs.getLong("servicio_id"),
-                        rs.getObject("fecha_emision", java.time.LocalDateTime.class), rs.getString("cliente"),
-                        rs.getString("documento_identidad"), rs.getString("telefono"), rs.getString("email"),
-                        rs.getString("placa"), rs.getString("marca"), rs.getString("modelo"),
-                        new DatosOrdenParaFactura(repuestos(con, ordenId), manoObra(con, ordenId)),
-                        rs.getBigDecimal("total_repuestos"), rs.getBigDecimal("total_mano_obra"),
-                        rs.getBigDecimal("impuestos"), rs.getBigDecimal("total_final")));
-            }
-        } catch (SQLException e) { throw new DaoException("No se pudo consultar la factura registrada.", e); }
     }
 
     @Override

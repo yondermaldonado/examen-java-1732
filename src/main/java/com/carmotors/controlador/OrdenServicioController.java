@@ -39,9 +39,6 @@ public class OrdenServicioController {
         return ejecutar(() -> filas(servicio.listarPorEstado(estado)));
     }
 
-    /** Propaga errores para que la vista no intente exportar una factura que no se confirmó. */
-    public void facturar(String id) { servicio.facturarOrden(entero(id)); }
-
     public String cambiarEstado(String id, String estado) {
         return ejecutar(() -> { servicio.cambiarEstado(entero(id), estado); return "Estado de la orden actualizado."; });
     }

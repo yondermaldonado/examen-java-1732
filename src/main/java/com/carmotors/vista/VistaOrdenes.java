@@ -9,20 +9,19 @@ import java.util.Optional;
 
 /**
  * Creación y consultas reales de órdenes de servicio.
- * Delega las operaciones y cobros a su vista especializada; consumo y facturación
- * se gestionan en las vistas operativas correspondientes.
+ * No cambia estados: las acciones con consumo, facturación y permisos se conectarán
+ * en sus vistas operativas cuando su flujo esté completo.
  */
-public final class VistaOrdenes {
+public final class
+VistaOrdenes {
     private final Consola consola;
     private final OrdenServicioController ordenes;
     private final VehiculoController vehiculos;
-    private final VistaOperaciones operaciones;
 
-    public VistaOrdenes(Consola consola, OrdenServicioController ordenes, VehiculoController vehiculos, VistaOperaciones operaciones) {
+    public VistaOrdenes(Consola consola, OrdenServicioController ordenes, VehiculoController vehiculos) {
         this.consola = Objects.requireNonNull(consola);
         this.ordenes = Objects.requireNonNull(ordenes);
         this.vehiculos = Objects.requireNonNull(vehiculos);
-        this.operaciones = Objects.requireNonNull(operaciones);
     }
 
     public void mostrarAdministracion() {
@@ -50,7 +49,7 @@ public final class VistaOrdenes {
             consola.mostrar("3. Listar órdenes");
             consola.mostrar("4. Consultar órdenes por vehículo (placa)");
             consola.mostrar("5. Consultar órdenes por estado");
-            consola.mostrar("6. Operaciones realizadas y cobros de mano de obra");
+            consola.mostrar("6. Completar Orden de Servicio");
             consola.mostrar("0. Regresar");
             String opcion = consola.leerOpcion("Opción", "1", "2", "3", "4", "5", "6", "0");
             if (opcion == null || "0".equals(opcion)) return;
@@ -60,13 +59,23 @@ public final class VistaOrdenes {
                 case "3" -> ejecutar(() -> consola.mostrar(ordenes.listar()));
                 case "4" -> listarPorVehiculo();
                 case "5" -> listarPorEstado();
-                case "6" -> {
-                    Integer id = enteroPositivo("Número de orden existente");
-                    if (id != null) operaciones.mostrar(id);
-                }
+                case "6" -> completarOrden();
                 default -> throw new IllegalStateException("Opción ya validada");
             }
         }
+    }
+
+    /** Completar una orden utiliza el Controller, nunca modifica MySQL directamente. */
+    private void completarOrden() {
+        consola.titulo("COMPLETAR ORDEN DE SERVICIO");
+        consola.mostrar("Órdenes en proceso:");
+        consola.mostrar(ordenes.listarPorEstado("En Proceso"));
+        Integer id = enteroPositivo("Número de orden En Proceso");
+        if (id == null) return;
+        consola.mostrar(ordenes.buscarPorId(id.toString()));
+        consola.mostrar("Se consumirán las reservas y después del commit se enviarán los avisos.");
+        if (!consola.confirmar("¿Confirmar finalización de la orden #" + id + "?")) return;
+        ejecutar(() -> consola.mostrar(ordenes.cambiarEstado(id.toString(), "Completado")));
     }
 
     /** El usuario busca por placa; el ID del vehículo se recupera de MySQL. */

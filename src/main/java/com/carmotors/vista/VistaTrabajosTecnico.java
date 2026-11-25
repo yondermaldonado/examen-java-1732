@@ -17,14 +17,12 @@ public final class VistaTrabajosTecnico {
     private final Consola consola;
     private final ConsultaTallerController consulta;
     private final OrdenServicioController ordenes;
-    private final VistaOperaciones operaciones;
 
     public VistaTrabajosTecnico(Consola consola, ConsultaTallerController consulta,
-                                OrdenServicioController ordenes, VistaOperaciones operaciones) {
+                                OrdenServicioController ordenes) {
         this.consola = Objects.requireNonNull(consola);
         this.consulta = Objects.requireNonNull(consulta);
         this.ordenes = Objects.requireNonNull(ordenes);
-        this.operaciones = Objects.requireNonNull(operaciones);
     }
 
     /** Devuelve el contexto actualizado; 0 conserva la sesión anterior; EOF la termina. */
@@ -137,11 +135,10 @@ public final class VistaTrabajosTecnico {
                 if ("En Proceso".equalsIgnoreCase(orden.getEstado())) {
                     consola.mostrar("2. Completar orden");
                 }
-                consola.mostrar("3. Operaciones y mano de obra");
                 consola.mostrar("0. Regresar");
                 String opcion = "En Proceso".equalsIgnoreCase(orden.getEstado())
-                        ? consola.leerOpcion("Opción", "1", "2", "3", "0")
-                        : consola.leerOpcion("Opción", "1", "3", "0");
+                        ? consola.leerOpcion("Opción", "1", "2", "0")
+                        : consola.leerOpcion("Opción", "1", "0");
                 if (opcion == null || "0".equals(opcion)) return;
                 if ("1".equals(opcion)) {
                     var asignaciones = consulta.listarPorOrden(ordenId);
@@ -150,8 +147,6 @@ public final class VistaTrabajosTecnico {
                                 + " | Horas: " + TiempoTrabajo.formatear(asignacion.horasTrabajadas()));
                     }
                     consola.esperar();
-                } else if ("3".equals(opcion)) {
-                    operaciones.mostrar(ordenId);
                 } else {
                     completarOrden(tecnicoId, orden);
                 }
