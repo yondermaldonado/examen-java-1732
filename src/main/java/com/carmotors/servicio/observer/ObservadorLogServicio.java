@@ -4,7 +4,7 @@ import com.carmotors.modelo.EventoServicioCompletado;
 import java.io.PrintStream;
 import java.util.Objects;
 
-/** Salida interna intercambiable; no conoce DAO, archivo ni envío al cliente. */
+
 public final class ObservadorLogServicio implements Observador {
     private final java.util.function.Supplier<PrintStream> salida;
 

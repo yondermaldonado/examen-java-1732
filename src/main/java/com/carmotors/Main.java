@@ -3,6 +3,7 @@ package com.carmotors;
 import com.carmotors.config.ConexionFactory;
 import com.carmotors.config.ConfiguracionAplicacion;
 import com.carmotors.controlador.ClienteController;
+import com.carmotors.controlador.FacturaController;
 import com.carmotors.controlador.HistorialController;
 import com.carmotors.controlador.AlertasInventarioController;
 import com.carmotors.controlador.LoteController;
@@ -21,6 +22,7 @@ import com.carmotors.controlador.TecnicoController;
 import com.carmotors.dao.OrdenServicioDAO;
 import com.carmotors.dao.VehiculoDAO;
 import com.carmotors.dao.factory.ClienteDAOFactory;
+import com.carmotors.dao.factory.FacturaDAOFactory;
 import com.carmotors.dao.factory.ClienteVehiculosDAOFactory;
 import com.carmotors.dao.factory.AlertasDAOFactory;
 import com.carmotors.dao.factory.ExistenciasDAOFactory;
@@ -51,6 +53,8 @@ import com.carmotors.servicio.RepuestoTipoService;
 import com.carmotors.servicio.AsignacionTecnicoService;
 import com.carmotors.servicio.TecnicoService;
 import com.carmotors.servicio.FacturacionOrden;
+import com.carmotors.servicio.ConsultaFacturaService;
+import com.carmotors.servicio.ExportadorFacturaTxt;
 import com.carmotors.servicio.FacturacionService;
 import com.carmotors.servicio.OrdenServicioService;
 import com.carmotors.servicio.PublicadorInventario;
@@ -203,11 +207,16 @@ public final class Main {
         VistaHistorial vistaHistorial = new VistaHistorial(
                 consola, historialCtrl, clienteCtrl, vehiculoCtrl);
 
+        FacturaController facturaCtrl = new FacturaController(
+                new ConsultaFacturaService(new FacturaDAOFactory().obtenerDAO(),
+                        conexiones, new ExportadorFacturaTxt()));
+
         VistaClientes clientes = new VistaClientes(consola, clienteCtrl);
         VistaTecnicos vistaTecnicos = new VistaTecnicos(consola, tecnicoCtrl, consultaTaller);
         VistaVehiculos vehiculos = new VistaVehiculos(consola, vehiculoCtrl, clienteCtrl);
         VistaOrdenes ordenes = new VistaOrdenes(consola, ordenCtrl, vehiculoCtrl);
-        VistaFacturacion vistaFacturacion = new VistaFacturacion(consola, ordenCtrl);
+        VistaFacturacion vistaFacturacion = new VistaFacturacion(consola, ordenCtrl, facturaCtrl,
+                ConfiguracionAplicacion.CARPETA_FACTURAS.toString());
         VistaSupervision supervision = new VistaSupervision(consola, consultaTaller, asignacionCtrl);
         VistaTrabajosTecnico trabajos = new VistaTrabajosTecnico(consola, consultaTaller, ordenCtrl);
 

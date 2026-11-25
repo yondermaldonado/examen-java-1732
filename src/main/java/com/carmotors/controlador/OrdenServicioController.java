@@ -39,6 +39,9 @@ public class OrdenServicioController {
         return ejecutar(() -> filas(servicio.listarPorEstado(estado)));
     }
 
+    /** Solo retorna cuando el servicio confirmó la transacción de facturación. */
+    public void facturar(String id) { servicio.facturarOrden(entero(id)); }
+
     public String cambiarEstado(String id, String estado) {
         return ejecutar(() -> { servicio.cambiarEstado(entero(id), estado); return "Estado de la orden actualizado."; });
     }
