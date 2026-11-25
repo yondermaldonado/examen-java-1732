@@ -1,0 +1,21 @@
+CARMOTORS - FACTURA #1
+Orden de servicio: #1
+Fecha: 2026-10-06 09:30:00
+Cliente: Camila Rojas Prada
+Documento: 1000000001
+Teléfono: 3001110001
+Correo: camila.rojas@example.com
+Vehículo: Chevrolet Spark GT | Placa: FKA101
+
+REPUESTOS UTILIZADOS
+#1 Aceite sintético 5W-30 1 L | cantidad: 4 | precio unitario: 38000.00 | importe: 152000.00
+#3 Filtro de aceite | cantidad: 1 | precio unitario: 25000.00 | importe: 25000.00
+
+MANO DE OBRA
+#1 Cambio de aceite y filtro | importe: 90000.00
+
+Total repuestos: 177000.00
+Total mano de obra: 90000.00
+Subtotal: 267000.00
+Impuestos: 50730.00
+TOTAL: 317730.00

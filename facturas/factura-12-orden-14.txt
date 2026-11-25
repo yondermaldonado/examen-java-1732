@@ -1,0 +1,20 @@
+CARMOTORS - FACTURA #12
+Orden de servicio: #14
+Fecha: 2026-11-25 16:32:09
+Cliente: Camila Rojas Prada
+Documento: 1000000001
+Teléfono: 3001110001
+Correo: camila.rojas@example.com
+Vehículo: Chevrolet Spark GT | Placa: FKA101
+
+REPUESTOS UTILIZADOS
+Sin repuestos.
+
+MANO DE OBRA
+Sin operaciones cobradas.
+
+Total repuestos: 0.00
+Total mano de obra: 0.00
+Subtotal: 0.00
+Impuestos: 0.00
+TOTAL: 0.00
