@@ -3,7 +3,6 @@ package com.carmotors.modelo;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-
 public record EventoServicioCompletado(
         int servicioId, int vehiculoId, String placa,
         int clienteId, String nombreCliente, LocalDateTime fechaCompletado) {

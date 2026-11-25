@@ -11,7 +11,6 @@ import java.nio.file.StandardOpenOption;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-
 public final class ObservadorNotificacionCliente implements Observador {
     private static final DateTimeFormatter FECHA_HORA =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

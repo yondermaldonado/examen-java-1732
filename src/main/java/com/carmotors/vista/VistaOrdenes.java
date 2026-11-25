@@ -159,7 +159,6 @@ VistaOrdenes {
             consola.mostrar("[!] Se requiere un entero positivo.");
         }
     }
-
     private String obligatorio(String titulo) {
         while (true) {
             String dato = consola.leerTexto(titulo + " (0 = cancelar)");

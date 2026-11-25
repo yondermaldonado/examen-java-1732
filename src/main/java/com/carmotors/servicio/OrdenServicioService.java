@@ -255,7 +255,6 @@ public class OrdenServicioService implements Sujeto {
         return permitidos.stream().filter(p -> p.equalsIgnoreCase(valor.strip())).findFirst()
                 .orElseThrow(() -> new ValidacionException("El " + campo + " debe ser: " + String.join(", ", permitidos) + "."));
     }
-
     private void validarId(int id) {
         if (id <= 0) throw new ValidacionException("El identificador debe ser mayor que cero.");
     }

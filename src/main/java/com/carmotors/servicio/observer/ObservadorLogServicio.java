@@ -4,7 +4,6 @@ import com.carmotors.modelo.EventoServicioCompletado;
 import java.io.PrintStream;
 import java.util.Objects;
 
-
 public final class ObservadorLogServicio implements Observador {
     private final java.util.function.Supplier<PrintStream> salida;
 
