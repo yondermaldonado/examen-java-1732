@@ -278,7 +278,7 @@ archivos de IDE, `*.log` y la carpeta local de facturas generadas.
 
 
 ### Examen final <1732> | <Notificación al cliente con Observer>
-Estudiante y grupo: <Yonder Maldonado> | <grupo 1>
+Estudiante y grupo: Yonder Maldonado | grupo 1
 Proyecto de origen: <https://github.com/RickDslayer/proyecto_java_grupo01.git>
 Acceso: <examen-java-1732/src/main/java/com/carmotors/main.java>
 Clases del examen: <src/main/java/com/carmotors/servicio/observer/Sujeto.java
