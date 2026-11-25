@@ -36,7 +36,7 @@ public class OrdenServicioService implements Sujeto {
     private final ConsumoReservasOrden consumo;
     private final FacturacionOrden facturacion;
     private final PublicadorInventario publicador;
-    /** Consulta en la misma transacción; es opcional para mantener los constructores antiguos. */
+
     private final ClienteDAO clienteDAO;
     // Set conserva orden de alta y evita registrar dos veces el mismo receptor.
     private final Set<Observador> suscriptores = new LinkedHashSet<>();
