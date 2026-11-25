@@ -7,11 +7,7 @@ import com.carmotors.modelo.Vehiculo;
 import java.util.Objects;
 import java.util.Optional;
 
-/**
- * Creación y consultas reales de órdenes de servicio.
- * No cambia estados: las acciones con consumo, facturación y permisos se conectarán
- * en sus vistas operativas cuando su flujo esté completo.
- */
+
 public final class
 VistaOrdenes {
     private final Consola consola;
@@ -28,8 +24,6 @@ VistaOrdenes {
         navegarAdministrador();
     }
 
-    /** El técnico solo crea órdenes aquí; sus propias tareas se consultarán
-     * mediante la selección de técnico y listarPorTecnico() en VistaTrabajosTecnico. */
     public void mostrarParaTecnico() {
         while (true) {
             consola.titulo("ÓRDENES DE SERVICIO | TÉCNICO");
@@ -65,7 +59,7 @@ VistaOrdenes {
         }
     }
 
-    /** Completar una orden utiliza el Controller, nunca modifica MySQL directamente. */
+
     private void completarOrden() {
         consola.titulo("COMPLETAR ORDEN DE SERVICIO");
         consola.mostrar("Órdenes en proceso:");
@@ -78,7 +72,7 @@ VistaOrdenes {
         ejecutar(() -> consola.mostrar(ordenes.cambiarEstado(id.toString(), "Completado")));
     }
 
-    /** El usuario busca por placa; el ID del vehículo se recupera de MySQL. */
+
     private void crear() {
         consola.titulo("NUEVA ORDEN DE SERVICIO");
         String placa = obligatorio("Placa del vehículo registrado");

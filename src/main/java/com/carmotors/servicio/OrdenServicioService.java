@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-/** Alta, consulta y ciclo de vida de órdenes; consumo/facturación mediante contratos transaccionales. */
+
 public class OrdenServicioService implements Sujeto {
     private final OrdenServicioDAO dao;
     private final VehiculoConsulta vehiculos;
@@ -63,7 +63,7 @@ public class OrdenServicioService implements Sujeto {
         this(creador.obtenerDAO(), vehiculos, conexiones, reloj, consumo, facturacion, publicador);
     }
 
-    /** Habilita consumo real dejando facturación bloqueada hasta integrar su módulo. */
+
     public OrdenServicioService(DAOFactory<OrdenServicioDAO> creador, VehiculoConsulta vehiculos,
                                 Supplier<Connection> conexiones, Clock reloj, ConsumoReservasOrden consumo,
                                 PublicadorInventario publicador) {
@@ -78,7 +78,7 @@ public class OrdenServicioService implements Sujeto {
         this(dao, vehiculos, conexiones, reloj, consumo, facturacion, publicador, null);
     }
 
-    /** Constructor del examen: nombre del cliente recuperado por DAO, sin SQL en el Service. */
+
     public OrdenServicioService(OrdenServicioDAO dao, VehiculoConsulta vehiculos,
                                 Supplier<Connection> conexiones, Clock reloj, ConsumoReservasOrden consumo,
                                 FacturacionOrden facturacion, PublicadorInventario publicador, ClienteDAO clienteDAO) {
@@ -151,7 +151,7 @@ public class OrdenServicioService implements Sujeto {
         }
     }
 
-    /** La lista de receptores es una fotografía estable de cada evento. */
+
     @Override
     public void notificarObservadores(EventoServicioCompletado detalle) {
         Objects.requireNonNull(detalle, "El evento no puede ser nulo.");

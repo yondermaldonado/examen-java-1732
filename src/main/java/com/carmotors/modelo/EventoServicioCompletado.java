@@ -3,7 +3,7 @@ package com.carmotors.modelo;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-/** Datos mínimos e inmutables del evento, sin acceso a MySQL ni a la consola. */
+
 public record EventoServicioCompletado(
         int servicioId, int vehiculoId, String placa,
         int clienteId, String nombreCliente, LocalDateTime fechaCompletado) {
